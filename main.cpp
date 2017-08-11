@@ -12,7 +12,7 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
          const vector<int>& computations, const vector<int>& fixedNode, int n, int k, int upperBound, vector<vector<int>>& x);
 
 double LLBP(const vector<vector<int>>& edgesWeight, const vector<int>& s, const vector<int>& c, const vector<int>& storages,
-            const vector<int>& computations, const vector<int>& fixedNodes, vector<vector<vector<double>>>& lanna1, vector<vector<vector<double>>>& miu1,
+            const vector<int>& computations, const vector<int>& fixedNodes, const vector<vector<vector<double>>>& lanna1, const vector<vector<vector<double>>>& miu1,
 vector<vector<vector<int>>>& z, vector<vector<int>>& x);
 
 bool comp(const pair<double, int>& p1, const pair<double, int>& p2) {
@@ -23,7 +23,7 @@ bool comp(const pair<double, int>& p1, const pair<double, int>& p2) {
 int main() {
     /*********variables************/
     //input variable
-    int n = 0, k = 0;
+    int n = 0, k = 0, upperBound = 0, cost = 0;
     //open ifstream
     ifstream in("input.txt");
 
@@ -37,7 +37,6 @@ int main() {
     //compute variable
     vector<vector<int>> x(n, vector<int>(k, 0));
     vector<int> where(n, 0);
-    int upperBound = 0, cost = 0;
 
     /************read input data******************/
     //read edgeWeights
@@ -250,25 +249,24 @@ int computeUpperBound(const vector<vector<int>>& edgesWeights, const vector<int>
 
 void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const vector<int>& c, const vector<int>& storages,
          const vector<int>& computations, const vector<int>& fixedNodes, int n, int k, int upperBound, vector<vector<int>>& x) {
-    //int z[n][n][k] = {0};//edge partition
     vector<vector<vector<int>>> z(n, vector<vector<int>>(n, vector<int>(k, 0)));//it is ok
-    //int lanna1[n][n][k] = {0};
+
     vector<vector<vector<double>>> lanna1(n, vector<vector<double>>(n, vector<double>(k, 0)));
-    //int miu1[n][n][k] = {0};
+
     vector<vector<vector<double>>> miu1(n, vector<vector<double>>(n, vector<double>(k, 0)));
 
     vector<vector<int>> recordX(n, vector<int>(k, 0));
+
     vector<vector<vector<int>>> recordZ(n, vector<vector<int>>(n, vector<int>(k, 0)));
 
-    double maxValue = INT32_MIN, llbp = 0.0;
-    double pi = 2;
-    int iterations = 500;
+    //int yita1[n][n][k] = {0};//type int
+    vector<vector<vector<int>>> yita1(n, vector<vector<int>>(n, vector<int>(k, 0)));
+    //int yita2[n][n][k] = {0};
+    vector<vector<vector<int>>> yita2(n, vector<vector<int>>(n, vector<int>(k, 0)));
 
-    int yita1[n][n][k] = {0};//type int
-    int yita2[n][n][k] = {0};
-    double delta = 0;
+    double maxValue = INT32_MIN, llbp = 0.0, pi = 2, delta = 0;
+    int iterations = 500, cnt = 0, chooseIteration = 0;//test
 
-    int cnt = 0, chooseIteration = 0;//test
     do{
         //reset x, z
         for(int i = 0; i < n; i++) {
@@ -368,7 +366,7 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
             for(int i = 0; i < n; i++) {
                 for(int j = 0; j < n; j++) {
                     for(int t = 0; t < k; t++) {
-                        recordZ[i][j][k] = z[i][j][k];
+                        recordZ[i][j][t] = z[i][j][t];//is t, not k
                     }
                 }
             }
@@ -392,6 +390,9 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
     } while(abs(upperBound - llbp) >= 0.5 && --iterations);
     //} while(upperBound > llbp && --iterations);
 
+    //test pi
+    cout<<"pi : "<<pi<<endl;
+
     for(int i = 0; i < n; i++) {
         for(int t = 0; t < k; t++) {
             x[i][t] = recordX[i][t];
@@ -413,7 +414,7 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
         cout<<endl;
     }
     */
-    /*
+
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
             for(int t = 0; t < k; t++) {
@@ -428,7 +429,7 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
         }
         cout<<endl;
     }
-    */
+
     //test the best x
     /*
     cout<<endl;
@@ -452,14 +453,14 @@ void SOA(const vector<vector<int>>& edgesWeights, const vector<int>& s, const ve
         cout<<realStorages[t]<<" "<<realComputation[t]<<endl;
     }
     */
-    /*
+
     cout<<"iteration : "<<iterations<<endl;
     cout<<"chooseIteration : "<<chooseIteration<<endl;
-    */
+
 }
 
 double LLBP(const vector<vector<int>>& edgesWeight, const vector<int>& s, const vector<int>& c, const vector<int>& storages,
-            const vector<int>& computations, const vector<int>& fixedNodes, vector<vector<vector<double>>>& lanna1, vector<vector<vector<double>>>& miu1,
+            const vector<int>& computations, const vector<int>& fixedNodes, const vector<vector<vector<double>>>& lanna1, const vector<vector<vector<double>>>& miu1,
             vector<vector<vector<int>>>& z, vector<vector<int>>& x) {
     double cost1 = 0.0, cost2 = 0.0, tmpValue = 0.0, minValue = INT32_MAX, sum = 0.0;
     int n = x.size(), k = x[0].size(), minIndex = -1;
@@ -489,7 +490,7 @@ double LLBP(const vector<vector<int>>& edgesWeight, const vector<int>& s, const 
         if(i < k) {//the front k nodes are fixed nodes
             sum = 0.0;
             for(int j = 0; j < n; j++) {
-                sum += (lanna1[i][j][i] - miu1[i][j][i] + miu1[j][i][i] - lanna1[j][i][i]);
+                sum += (lanna1[i][j][i] - miu1[i][j][i] + miu1[j][i][i] - lanna1[j][i][i]);//i == t
             }
             minIndex = i;
             minValue = sum;
